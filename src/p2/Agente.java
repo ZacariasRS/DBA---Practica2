@@ -1,5 +1,7 @@
 package p2;
 
+import java.util.ArrayList;
+
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -10,10 +12,17 @@ import es.upv.dsic.gti_ia.core.SingleAgent;
 public class Agente extends SingleAgent {
 	
 	String key;
-	int x, y;
+	int x, y, bateria;
+	ArrayList<Integer> scanner;
+	ArrayList<Integer> radar;
 	
 	public Agente(AgentID aid) throws Exception {
 		super(aid);
+	}
+	
+	public void init() {
+		scanner = new ArrayList<Integer>(25);
+		radar = new ArrayList<Integer>(25);
 	}
 	
 	
