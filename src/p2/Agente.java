@@ -19,6 +19,7 @@ public class Agente extends SingleAgent {
 	ArrayList<Integer> radar;
 	String lastAction;
 	ArrayList<ArrayList<Integer>> mapa;
+	int movimientos;
 	
 	public Agente(AgentID aid) throws Exception {
 		super(aid);
@@ -28,6 +29,7 @@ public class Agente extends SingleAgent {
 		scanner = new ArrayList<Integer>(25);
 		radar = new ArrayList<Integer>(25);
 		lastAction = "idle";
+		movimientos = 0;
 		mapa = new ArrayList<ArrayList<Integer>>();
 		ArrayList<Integer> aux = new ArrayList<Integer>();
 		for (int i=0;i<200;i++) {
@@ -141,65 +143,126 @@ public class Agente extends SingleAgent {
 	}
 	
 	
-	public int posicionMenor(ArrayList<Integer> array) {
+	public int posicionMenor() {
 		int pos = 0;
 		int menor = 90000000;
-		for (int i=0;i<array.size();i++) {
+		
+		
+		for (int i=0;i<24;i++) {
+			int xaux = (i%5)-2;
+			int aux = i/5;
+			int f = aux%1;
+			int yaux = (aux-f)-2;
+			if (mapa.get(y-yaux).get(x-xaux) !=0 && radar.get(i)!=1) {
+				System.out.println("sumo");
+				scanner.set(i,scanner.get(i)+20);
+			}
+		}
+		
+		for (int i=0;i<scanner.size();i++) {
 			if (radar.get(i) !=1 && i!=12) {
-				if (array.get(i) < menor) {
+				if (scanner.get(i) < menor) {
 					pos = i;
-					menor = array.get(i);
+					menor = scanner.get(i);
 				}
 			}
 		}
 		return pos;
 	}
+	
 	public String think() {
 		String res = null;
-		
-		int mejor = posicionMenor(scanner);
+		boolean salir = true;
+		do {
+			System.out.println("Thinking...");
+		int mejor = posicionMenor();
 		if (mejor==0||mejor==1||mejor==5||mejor==6) res = "moveNW";
 		if (mejor==3||mejor==4||mejor==8||mejor==9) res = "moveNE";
 		if (mejor==15||mejor==16||mejor==20||mejor==21) res = "moveSW";
 		if (mejor==18||mejor==19||mejor==23||mejor==24) res = "moveSE";
-	
+		
+		/*if (mejor==5) res = "moveW";
+		if (mejor==15) res = "moveW";
+		if (mejor==9) res = "moveE";
+		if (mejor==19) res = "moveE";
+		*/
 		if (mejor==2||mejor==7) res = "moveN";
 		if (mejor==13||mejor==14) res = "moveE";
 		if (mejor==17||mejor==22) res = "moveS";
 		if (mejor==10||mejor==11) res = "moveW";
 		
-		
-		
 		switch (res) {
-			case "moveN": 	mapa.get(y-1).set(x,1);
+			case "moveN": 	if (radar.get(7) !=1) {
+							mapa.get(y-1).set(x,1);
 						  	y--;
+						  	salir=false;
+							} else {
+								//scanner.set(mejor,scanner.get(mejor)+20);
+							}
 						  	break;
-			case "moveNW": 	mapa.get(y-1).set(x-1,1);
+			case "moveNW": 	if (radar.get(6) !=1) {
+							mapa.get(y-1).set(x-1,1);
 			  				y--;
 			  				x--;
+			  				salir=false;
+			  				} else {
+			  					//scanner.set(mejor,scanner.get(mejor)+20);
+			  				}
 			  				break;
-			case "moveNE": mapa.get(y-1).set(x+1,1);
+			case "moveNE":  if (radar.get(8) !=1) {
+							mapa.get(y-1).set(x+1,1);
 			  				y--;
 			  				x++;
+			  				salir=false;
+							} else {
+								//scanner.set(mejor,scanner.get(mejor)+20);
+							}
 			  				break;
-			case "moveS": 	mapa.get(y+1).set(x,1);
+			case "moveS": 	if (radar.get(17) !=1) {
+							mapa.get(y+1).set(x,1);
 			  				y++;
+			  				salir=false;
+							} else {
+								//scanner.set(mejor,scanner.get(mejor)+20);
+							}
 			  				break;
-			case "moveSW":  mapa.get(y+1).set(x-1,1);
+			case "moveSW":  if (radar.get(16) !=1) {
+							mapa.get(y+1).set(x-1,1);
 			  				y++;
 			  				x--;
+			  				salir=false;
+							} else {
+								//scanner.set(mejor,scanner.get(mejor)+20);
+							}
 			  				break;
-			case "moveSE": 	mapa.get(y+1).set(x+1,1);
+			case "moveSE": 	if (radar.get(18) !=1) {
+							mapa.get(y+1).set(x+1,1);
 							y++;
 							x++;
+							salir=false;
+							} else {
+								//scanner.set(mejor,scanner.get(mejor)+20);
+							}
 							break;
-			case "moveW": 	mapa.get(y).set(x-1,1);
+			case "moveW": 	if (radar.get(11) !=1) {
+							mapa.get(y).set(x-1,1);
 							x--;
+							salir=false;
+							} else {
+								//scanner.set(mejor,scanner.get(mejor)+20);
+							}
 							break;
-			case "moveE": 	mapa.get(y).set(x+1,1);
+			case "moveE": 	if (radar.get(13) !=1) {
+							mapa.get(y).set(x+1,1);
 							x++;
+							salir=false;
+							} else {
+								//scanner.set(mejor,scanner.get(mejor)+20);
+							}
 							break;
 		}
+		} while (salir);
+		movimientos++;
 		return res;
 	}
 	
@@ -267,10 +330,10 @@ public class Agente extends SingleAgent {
 				System.out.println(scanner.toString());
 				radar = recibirRadar();
 				scanner = recibirScanner();
-
-				if(scanner.get(12)==0) {
+				System.out.println(radar.toString());
+				System.out.println("Estamos en: "+x+","+y);
+				if(radar.get(12)==2) {
 					System.out.println("Encontrado en el punto:("+x+","+y+")");
-					System.out.println(mapa.get(x).get(y));
 					moverse = false;
 				} else {
 					if (bateria < 25) System.out.println("Repostando "+refuel()); else System.out.println("Nos movemos "+move(think()));
@@ -285,7 +348,8 @@ public class Agente extends SingleAgent {
 	}
 	
 	public void finalize() {
-		System.out.println("Agente("+this.getName()+") Terminando");       
+		System.out.println("Agente("+this.getName()+") Terminando");
+		System.out.println(movimientos);
         super.finalize();
 	}
 	
