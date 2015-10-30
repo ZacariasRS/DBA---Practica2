@@ -1,6 +1,7 @@
 package p2;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -13,9 +14,11 @@ import es.upv.dsic.gti_ia.core.SingleAgent;
 public class Agente extends SingleAgent {
 	
 	String key;
-	int x, y, bateria;
+	int x=100, y=100, bateria;
 	ArrayList<Integer> scanner;
 	ArrayList<Integer> radar;
+	String lastAction;
+	ArrayList<ArrayList<Integer>> mapa;
 	
 	public Agente(AgentID aid) throws Exception {
 		super(aid);
@@ -24,6 +27,16 @@ public class Agente extends SingleAgent {
 	public void init() {
 		scanner = new ArrayList<Integer>(25);
 		radar = new ArrayList<Integer>(25);
+		lastAction = "idle";
+		mapa = new ArrayList<ArrayList<Integer>>();
+		ArrayList<Integer> aux = new ArrayList<Integer>();
+		for (int i=0;i<200;i++) {
+			aux.add(0);
+		}
+		for (int i=0;i<200;i++) {
+			mapa.add(aux);
+		}
+		mapa.get(y).set(x,1);
 	}
 	
 	
@@ -32,7 +45,7 @@ public class Agente extends SingleAgent {
 		
 		try {
 			json.put("command","login");
-			json.put("world","map5");
+			json.put("world","map1");
 			json.put("radar","botz");
 			json.put("scanner","botz");
 			
@@ -143,18 +156,50 @@ public class Agente extends SingleAgent {
 	}
 	public String think() {
 		String res = null;
-		int mejor = posicionMenor(scanner);
 		
+		int mejor = posicionMenor(scanner);
 		if (mejor==0||mejor==1||mejor==5||mejor==6) res = "moveNW";
 		if (mejor==3||mejor==4||mejor==8||mejor==9) res = "moveNE";
 		if (mejor==15||mejor==16||mejor==20||mejor==21) res = "moveSW";
 		if (mejor==18||mejor==19||mejor==23||mejor==24) res = "moveSE";
-
+	
 		if (mejor==2||mejor==7) res = "moveN";
 		if (mejor==13||mejor==14) res = "moveE";
 		if (mejor==17||mejor==22) res = "moveS";
 		if (mejor==10||mejor==11) res = "moveW";
 		
+		
+		
+		switch (res) {
+			case "moveN": 	mapa.get(y-1).set(x,1);
+						  	y--;
+						  	break;
+			case "moveNW": 	mapa.get(y-1).set(x-1,1);
+			  				y--;
+			  				x--;
+			  				break;
+			case "moveNE": mapa.get(y-1).set(x+1,1);
+			  				y--;
+			  				x++;
+			  				break;
+			case "moveS": 	mapa.get(y+1).set(x,1);
+			  				y++;
+			  				break;
+			case "moveSW":  mapa.get(y+1).set(x-1,1);
+			  				y++;
+			  				x--;
+			  				break;
+			case "moveSE": 	mapa.get(y+1).set(x+1,1);
+							y++;
+							x++;
+							break;
+			case "moveW": 	mapa.get(y).set(x-1,1);
+							x--;
+							break;
+			case "moveE": 	mapa.get(y).set(x+1,1);
+							x++;
+							break;
+		}
 		return res;
 	}
 	
@@ -224,7 +269,8 @@ public class Agente extends SingleAgent {
 				scanner = recibirScanner();
 
 				if(scanner.get(12)==0) {
-					System.out.println("Encontrado");
+					System.out.println("Encontrado en el punto:("+x+","+y+")");
+					System.out.println(mapa.get(x).get(y));
 					moverse = false;
 				} else {
 					if (bateria < 25) System.out.println("Repostando "+refuel()); else System.out.println("Nos movemos "+move(think()));
