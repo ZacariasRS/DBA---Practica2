@@ -147,8 +147,8 @@ public class Agente extends SingleAgent {
 		int pos = 0;
 		int menor = 90000000;
 		
-		
-		for (int i=0;i<24;i++) {
+		/*
+		for (int i=0;i<25;i++) {
 			int xaux = (i%5)-2;
 			int aux = i/5;
 			int f = aux%1;
@@ -158,7 +158,7 @@ public class Agente extends SingleAgent {
 				scanner.set(i,scanner.get(i)+20);
 			}
 		}
-		
+		*/
 		for (int i=0;i<scanner.size();i++) {
 			if (radar.get(i) !=1 && i!=12) {
 				if (scanner.get(i) < menor) {
@@ -174,7 +174,6 @@ public class Agente extends SingleAgent {
 		String res = null;
 		boolean salir = true;
 		do {
-			System.out.println("Thinking...");
 		int mejor = posicionMenor();
 		if (mejor==0||mejor==1||mejor==5||mejor==6) res = "moveNW";
 		if (mejor==3||mejor==4||mejor==8||mejor==9) res = "moveNE";
