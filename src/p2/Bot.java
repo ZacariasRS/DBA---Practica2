@@ -1,8 +1,7 @@
 package p2;
 
-import java.util.ArrayList;
-import java.util.Collections;
 
+import java.util.ArrayList;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -11,7 +10,7 @@ import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.SingleAgent;
 
-public class Agente extends SingleAgent {
+public class Bot extends SingleAgent {
 	
 	String key;
 	int x=100, y=100, bateria;
@@ -21,10 +20,11 @@ public class Agente extends SingleAgent {
 	ArrayList<ArrayList<Integer>> mapa;
 	int movimientos;
 	
-	public Agente(AgentID aid) throws Exception {
+	public Bot(AgentID aid) throws Exception {
 		super(aid);
 	}
 	
+	@Override
 	public void init() {
 		scanner = new ArrayList<Integer>(25);
 		radar = new ArrayList<Integer>(25);
@@ -46,10 +46,12 @@ public class Agente extends SingleAgent {
 		JSONObject json = new JSONObject();
 		
 		try {
-			json.put("command","login");
-			json.put("world","map1");
-			json.put("radar","botz");
-			json.put("scanner","botz");
+			json.put("command", "login");
+			json.put("world", "map1");
+			json.put("radar", RescueBots.nRadar);
+			json.put("scanner", RescueBots.nScanner);
+			json.put("gps", RescueBots.nGPS);
+			json.put("battery", RescueBots.nBattery);
 			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -58,7 +60,7 @@ public class Agente extends SingleAgent {
 		
 		ACLMessage login = new ACLMessage();
 		login.setSender(this.getAid());
-		login.setReceiver(new AgentID("Izar"));
+		login.setReceiver(new AgentID(RescueBots.nServer));
 		login.setContent(json.toString());
 		this.send(login);
 		
@@ -69,6 +71,8 @@ public class Agente extends SingleAgent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		System.out.println("Login OK");
 		
 		try {
 			JSONObject receive = new JSONObject(inbox.getContent());
@@ -96,50 +100,92 @@ public class Agente extends SingleAgent {
 		
 	}
 	
-	public ArrayList<Integer> recibirScanner() {
-		ArrayList<Integer> res = new ArrayList<Integer>(25);
-		ACLMessage inbox = new ACLMessage();
-		try {
-			inbox = this.receiveACLMessage();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void requestBattery () throws InterruptedException, JSONException {
+		ACLMessage inbox, outbox;
+		boolean received = false;
 		
-		try {
-			JSONObject receive = new JSONObject(inbox.getContent());
-			JSONArray jArray = receive.getJSONArray("scanner");
-			for (int i=0;i<25;i++) {
-				res.add(jArray.getInt(i));
+		while (!received) {
+			outbox = new ACLMessage();
+			outbox.setSender(this.getAid());
+			outbox.setReceiver(new AgentID(RescueBots.nBattery));
+			this.send(outbox);
+			inbox = this.receiveACLMessage();
+			JSONObject data = new JSONObject(inbox.getContent());
+			if (data.has("battery")) {
+				bateria = data.getInt("battery");
+				received = true;
+				System.out.println("Bot: battery received: "+bateria);
 			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		return res;
 	}
 	
-	public ArrayList<Integer> recibirRadar() {
-		ArrayList<Integer> res = new ArrayList<Integer>(25);
-		ACLMessage inbox = new ACLMessage();
-		try {
-			inbox = this.receiveACLMessage();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void requestGPS () throws InterruptedException, JSONException {
+		ACLMessage inbox, outbox;
+		boolean received = false;
 		
-		try {
-			JSONObject receive = new JSONObject(inbox.getContent());
-			JSONArray jArray = receive.getJSONArray("radar");
-			for (int i=0;i<25;i++) {
-				res.add(jArray.getInt(i));
+		while (!received) {
+			outbox = new ACLMessage();
+			outbox.setSender(this.getAid());
+			outbox.setReceiver(new AgentID(RescueBots.nGPS));
+			this.send(outbox);
+			inbox = this.receiveACLMessage();
+			JSONObject data = new JSONObject(inbox.getContent());
+			if (data.has("gps")) {
+				JSONObject gpsXY = new JSONObject(data.getString("gps"));
+				x = gpsXY.getInt("x");
+				y = gpsXY.getInt("y");
+				System.out.println("Bot: GPS received: X="+x+", Y="+y);
+				received = true;
 			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		return res;
+	}
+	
+	public void requestScanner() throws InterruptedException, JSONException {
+		ArrayList<Integer> res = new ArrayList<Integer>(25);
+		ACLMessage inbox, outbox;
+		boolean received = false;
+		
+		while (!received) {
+			outbox = new ACLMessage();
+			outbox.setSender(this.getAid());
+			outbox.setReceiver(new AgentID(RescueBots.nScanner));
+			this.send(outbox);
+			inbox = this.receiveACLMessage();
+			JSONObject data = new JSONObject(inbox.getContent());
+			if (data.has("scanner")) {
+				JSONObject receive = new JSONObject(inbox.getContent());
+				JSONArray jArray = receive.getJSONArray("scanner");
+				for (int i=0;i<25;i++) {
+					res.add(jArray.getInt(i));
+				}
+				scanner = res;
+				received = true;
+			}
+		}
+	}
+	
+	public void requestRadar() throws InterruptedException, JSONException {
+		ArrayList<Integer> res = new ArrayList<Integer>(25);
+		ACLMessage inbox, outbox;
+		boolean received = false;
+		
+		while (!received) {
+			outbox = new ACLMessage();
+			outbox.setSender(this.getAid());
+			outbox.setReceiver(new AgentID(RescueBots.nRadar));
+			this.send(outbox);
+			inbox = this.receiveACLMessage();
+			JSONObject data = new JSONObject(inbox.getContent());
+			if (data.has("radar")) {
+				JSONObject receive = new JSONObject(inbox.getContent());
+				JSONArray jArray = receive.getJSONArray("radar");
+				for (int i=0; i<25; i++) {
+					res.add(jArray.getInt(i));
+				}
+				radar = res;
+				received = true;
+			}
+		}
 	}
 	
 	
@@ -312,23 +358,22 @@ public class Agente extends SingleAgent {
 		return result;
 	}
 	
+	@Override
 	public void execute() {
-		
-		login();
 		boolean moverse = true;
 		
-		//System.out.println(key);
-			
+		login();
 		try {
-			radar = recibirRadar();
-			scanner = recibirScanner();
-			
+			requestBattery();
+			requestGPS();
+			requestScanner();
+			requestRadar();
 			refuel();
 			while(moverse) {
-				System.out.println(bateria);
-				System.out.println(scanner.toString());
-				radar = recibirRadar();
-				scanner = recibirScanner();
+				//System.out.println(bateria);
+				//System.out.println(scanner.toString());
+				requestScanner();
+				requestRadar();
 				System.out.println(radar.toString());
 				System.out.println("Estamos en: "+x+","+y);
 				if(radar.get(12)==2) {
@@ -338,19 +383,18 @@ public class Agente extends SingleAgent {
 					if (bateria < 25) System.out.println("Repostando "+refuel()); else System.out.println("Nos movemos "+move(think()));
 				}
 			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+		} catch (InterruptedException | JSONException e) {
 			e.printStackTrace();
 		}
 		
 		logout();
 	}
 	
+	@Override
 	public void finalize() {
 		System.out.println("Agente("+this.getName()+") Terminando");
 		System.out.println(movimientos);
         super.finalize();
 	}
-	
 
 }
