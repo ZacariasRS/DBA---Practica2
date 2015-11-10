@@ -1,4 +1,4 @@
-package p2;
+package src.p2;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -36,7 +36,7 @@ public class Scanner extends SingleAgent {
 				sender = inbox.getSender().name;
 				if (sender.equals(RescueBots.nBot)) {
 					if (state) {
-						outMsg = data;
+						outMsg = data;;
 						state = false;
 					} else {
 						outMsg = new JSONObject();
@@ -48,7 +48,6 @@ public class Scanner extends SingleAgent {
 					outbox.setContent(outMsg.toString());
 					this.send(outbox);
 				} else {
-					System.out.println("Inbox" + inbox.getContent());
 					data = new JSONObject(inbox.getContent());
 					state = true;
 				}
