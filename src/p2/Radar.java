@@ -1,4 +1,4 @@
-package src.p2;
+package p2;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

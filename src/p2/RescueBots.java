@@ -1,4 +1,4 @@
-package src.p2;
+package p2;
 
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.AgentsConnection;

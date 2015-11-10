@@ -1,4 +1,4 @@
-package src.p2;
+package p2;
 
 
 import java.util.ArrayList;
@@ -39,6 +39,7 @@ public class Bot extends SingleAgent {
 			mapa.add(aux);
 		}
 		mapa.get(y).set(x,1);
+		Map.getInstance().setMapComposition(x, y, Map.MapState.ROBOT);
 	}
 	
 	
@@ -239,6 +240,8 @@ public class Bot extends SingleAgent {
 		switch (res) {
 			case "moveN": 	if (radar.get(7) !=1) {
 							mapa.get(y-1).set(x,1);
+							Map.getInstance().setMapComposition(x, y-1, Map.MapState.ROBOT);
+							
 						  	y--;
 						  	salir=false;
 							} else {
@@ -247,6 +250,7 @@ public class Bot extends SingleAgent {
 						  	break;
 			case "moveNW": 	if (radar.get(6) !=1) {
 							mapa.get(y-1).set(x-1,1);
+							Map.getInstance().setMapComposition(x-1, y-1, Map.MapState.ROBOT);
 			  				y--;
 			  				x--;
 			  				salir=false;
@@ -256,6 +260,7 @@ public class Bot extends SingleAgent {
 			  				break;
 			case "moveNE":  if (radar.get(8) !=1) {
 							mapa.get(y-1).set(x+1,1);
+							Map.getInstance().setMapComposition(x+1, y-1, Map.MapState.ROBOT);
 			  				y--;
 			  				x++;
 			  				salir=false;
@@ -265,6 +270,7 @@ public class Bot extends SingleAgent {
 			  				break;
 			case "moveS": 	if (radar.get(17) !=1) {
 							mapa.get(y+1).set(x,1);
+							Map.getInstance().setMapComposition(x, y+1, Map.MapState.ROBOT);
 			  				y++;
 			  				salir=false;
 							} else {
@@ -273,6 +279,7 @@ public class Bot extends SingleAgent {
 			  				break;
 			case "moveSW":  if (radar.get(16) !=1) {
 							mapa.get(y+1).set(x-1,1);
+							Map.getInstance().setMapComposition(x-1, y+1, Map.MapState.ROBOT);
 			  				y++;
 			  				x--;
 			  				salir=false;
@@ -282,6 +289,7 @@ public class Bot extends SingleAgent {
 			  				break;
 			case "moveSE": 	if (radar.get(18) !=1) {
 							mapa.get(y+1).set(x+1,1);
+							Map.getInstance().setMapComposition(x+1, y+1, Map.MapState.ROBOT);
 							y++;
 							x++;
 							salir=false;
@@ -291,6 +299,7 @@ public class Bot extends SingleAgent {
 							break;
 			case "moveW": 	if (radar.get(11) !=1) {
 							mapa.get(y).set(x-1,1);
+							Map.getInstance().setMapComposition(x-1, y, Map.MapState.ROBOT);
 							x--;
 							salir=false;
 							} else {
@@ -299,6 +308,7 @@ public class Bot extends SingleAgent {
 							break;
 			case "moveE": 	if (radar.get(13) !=1) {
 							mapa.get(y).set(x+1,1);
+							Map.getInstance().setMapComposition(x+1, y, Map.MapState.ROBOT);
 							x++;
 							salir=false;
 							} else {
