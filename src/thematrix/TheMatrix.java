@@ -1,4 +1,4 @@
-package src.thematrix;
+package thematrix;
 
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.AgentsConnection;
