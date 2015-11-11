@@ -48,7 +48,7 @@ public class Bot extends SingleAgent {
 		
 		try {
 			json.put("command", "login");
-			json.put("world", "map1");
+			json.put("world", "map2");
 			json.put("radar", RescueBots.nRadar);
 			json.put("scanner", RescueBots.nScanner);
 			json.put("gps", RescueBots.nGPS);
