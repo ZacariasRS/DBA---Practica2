@@ -10,7 +10,7 @@ import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.SingleAgent;
 
-public class Bot extends SingleAgent {
+public class BotZ extends SingleAgent {
 	
 	String key;
 	int x, y, bateria;
@@ -20,7 +20,7 @@ public class Bot extends SingleAgent {
 	ArrayList<ArrayList<Integer>> mapa;
 	int movimientos;
 	
-	public Bot(AgentID aid) throws Exception {
+	public BotZ(AgentID aid) throws Exception {
 		super(aid);
 	}
 	
