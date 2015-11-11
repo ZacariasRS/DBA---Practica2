@@ -47,12 +47,11 @@ public class BotZ extends SingleAgent {
 		
 		try {
 			json.put("command", "login");
-			json.put("world", "map1");
+			json.put("world", "map2");
 			json.put("radar", RescueBots.nRadar);
 			json.put("scanner", RescueBots.nScanner);
 			json.put("gps", RescueBots.nGPS);
 			json.put("battery", RescueBots.nBattery);
-			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -236,7 +235,7 @@ public class BotZ extends SingleAgent {
 		}
 		*/
 		for (int i=0;i<scanner.size();i++) {
-			if (radar.get(i) !=1 && i!=12) {
+			if (/*radar.get(i) !=1 && */i!=12) {
 				if (scanner.get(i) < menor) {
 					pos = i;
 					menor = scanner.get(i);
@@ -248,9 +247,10 @@ public class BotZ extends SingleAgent {
 	
 	public String think() {
 		String res = null;
-		boolean salir = true;
-		do {
+		
 		int mejor = posicionMenor();
+		
+		
 		if (mejor==0||mejor==1||mejor==5||mejor==6) res = "moveNW";
 		if (mejor==3||mejor==4||mejor==8||mejor==9) res = "moveNE";
 		if (mejor==15||mejor==16||mejor==20||mejor==21) res = "moveSW";
@@ -265,58 +265,61 @@ public class BotZ extends SingleAgent {
 		if (mejor==13||mejor==14) res = "moveE";
 		if (mejor==17||mejor==22) res = "moveS";
 		if (mejor==10||mejor==11) res = "moveW";
-		
-		switch (res) {
-			case "moveN": 	if (radar.get(7) !=1) {
-						  	salir=false;
-							} else {
-								//scanner.set(mejor,scanner.get(mejor)+20);
-							}
-						  	break;
-			case "moveNW": 	if (radar.get(6) !=1) {
-			  				salir=false;
-			  				} else {
-			  					//scanner.set(mejor,scanner.get(mejor)+20);
-			  				}
-			  				break;
-			case "moveNE":  if (radar.get(8) !=1) {
-			  				salir=false;
-							} else {
-								//scanner.set(mejor,scanner.get(mejor)+20);
-							}
-			  				break;
-			case "moveS": 	if (radar.get(17) !=1) {
-			  				salir=false;
-							} else {
-								//scanner.set(mejor,scanner.get(mejor)+20);
-							}
-			  				break;
-			case "moveSW":  if (radar.get(16) !=1) {
-			  				salir=false;
-							} else {
-								//scanner.set(mejor,scanner.get(mejor)+20);
-							}
-			  				break;
-			case "moveSE": 	if (radar.get(18) !=1) {
-							salir=false;
-							} else {
-								//scanner.set(mejor,scanner.get(mejor)+20);
-							}
-							break;
-			case "moveW": 	if (radar.get(11) !=1) {
-							salir=false;
-							} else {
-								//scanner.set(mejor,scanner.get(mejor)+20);
-							}
-							break;
-			case "moveE": 	if (radar.get(13) !=1) {
-							salir=false;
-							} else {
-								//scanner.set(mejor,scanner.get(mejor)+20);
-							}
-							break;
-		}
-		} while (salir);
+		boolean salir=false;
+		do {
+			switch (res) {
+				case "moveN": 	if (radar.get(7) !=1) {
+							  		
+								} else {
+									if(scanner.get(0)<scanner.get(4)) res = "moveE";
+									else res="moveW";
+								}
+							  	break;
+				case "moveNW": 	if (radar.get(6) !=1) {
+				  					
+				  				} else {
+				  					if(scanner.get(20)<scanner.get(24)) res = "moveE";
+									else res="moveW";
+				  				}
+				  				break;
+				case "moveNE":  if (radar.get(8) !=1) {
+				  				;
+								} else {
+									res=lastAction;
+								}
+				  				break;
+				case "moveS": 	if (radar.get(17) !=1) {
+				  				;
+								} else {
+									if(scanner.get(20)<scanner.get(24)) res = "moveE";
+									else res="moveW";
+								}
+				  				break;
+				case "moveSW":  if (radar.get(16) !=1) {
+				  				;
+								} else {
+									res=lastAction;
+								}
+				  				break;
+				case "moveSE": 	if (radar.get(18) !=1) {
+								} else {
+									res=lastAction;
+								}
+								break;
+				case "moveW": 	if (radar.get(11) !=1) {
+								} else {
+									if(scanner.get(4)<scanner.get(24)) res = "moveN";
+									else res="moveS";
+								}
+								break;
+				case "moveE": 	if (radar.get(13) !=1) {
+								} else {
+									if(scanner.get(0)<scanner.get(20)) res = "moveN";
+									else res="moveS";
+								}
+								break;
+			}
+		} while(salir);
 		movimientos++;
 		return res;
 	}
