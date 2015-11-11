@@ -14,7 +14,7 @@ public class BotZ extends SingleAgent {
 	
 	String key;
 	int x, y, bateria;
-	ArrayList<Integer> scanner;
+	public ArrayList<Integer> scanner;
 	ArrayList<Integer> radar;
 	String lastAction;
 	ArrayList<ArrayList<Integer>> mapa;
@@ -38,7 +38,6 @@ public class BotZ extends SingleAgent {
 		for (int i=0;i<200;i++) {
 			mapa.add(aux);
 		}
-		mapa.get(y).set(x,1);
 		//
 	}
 	
@@ -48,7 +47,7 @@ public class BotZ extends SingleAgent {
 		
 		try {
 			json.put("command", "login");
-			json.put("world", "map2");
+			json.put("world", "map1");
 			json.put("radar", RescueBots.nRadar);
 			json.put("scanner", RescueBots.nScanner);
 			json.put("gps", RescueBots.nGPS);
@@ -136,6 +135,7 @@ public class BotZ extends SingleAgent {
 				x = gpsXY.getInt("x");
 				y = gpsXY.getInt("y");
 				//System.out.println("Bot: GPS received: X="+x+", Y="+y);
+				mapa.get(y).set(x,3);
 				Map.getInstance().setMapComposition(x, y, Map.MapState.ROBOT);
 				received = true;
 			}
@@ -201,7 +201,11 @@ public class BotZ extends SingleAgent {
 				int actualx = x-xaux;
 				int actualy = y-yaux;
 				if (actualx >= 0 && actualy >= 0) {
-					mapa.get(y-yaux).set(x-xaux,z);
+					if (mapa.get(actualy).get(actualx) != 3) {
+						mapa.get(y-yaux).set(x-xaux,z);
+					} else {
+						//scanner.set(i,scanner.get(i)+22);
+					}
 					switch(z) {
 						case 0: Map.getInstance().setMapComposition(x-xaux, y-yaux, Map.MapState.KNOWN);
 								break;
@@ -264,77 +268,48 @@ public class BotZ extends SingleAgent {
 		
 		switch (res) {
 			case "moveN": 	if (radar.get(7) !=1) {
-							mapa.get(y-1).set(x,1);
-							
-							
-						  	y--;
 						  	salir=false;
 							} else {
 								//scanner.set(mejor,scanner.get(mejor)+20);
 							}
 						  	break;
 			case "moveNW": 	if (radar.get(6) !=1) {
-							mapa.get(y-1).set(x-1,1);
-							
-			  				y--;
-			  				x--;
 			  				salir=false;
 			  				} else {
 			  					//scanner.set(mejor,scanner.get(mejor)+20);
 			  				}
 			  				break;
 			case "moveNE":  if (radar.get(8) !=1) {
-							mapa.get(y-1).set(x+1,1);
-							
-			  				y--;
-			  				x++;
 			  				salir=false;
 							} else {
 								//scanner.set(mejor,scanner.get(mejor)+20);
 							}
 			  				break;
 			case "moveS": 	if (radar.get(17) !=1) {
-							mapa.get(y+1).set(x,1);
-							
-			  				y++;
 			  				salir=false;
 							} else {
 								//scanner.set(mejor,scanner.get(mejor)+20);
 							}
 			  				break;
 			case "moveSW":  if (radar.get(16) !=1) {
-							mapa.get(y+1).set(x-1,1);
-							
-			  				y++;
-			  				x--;
 			  				salir=false;
 							} else {
 								//scanner.set(mejor,scanner.get(mejor)+20);
 							}
 			  				break;
 			case "moveSE": 	if (radar.get(18) !=1) {
-							mapa.get(y+1).set(x+1,1);
-							
-							y++;
-							x++;
 							salir=false;
 							} else {
 								//scanner.set(mejor,scanner.get(mejor)+20);
 							}
 							break;
 			case "moveW": 	if (radar.get(11) !=1) {
-							mapa.get(y).set(x-1,1);
-							
-							x--;
 							salir=false;
 							} else {
 								//scanner.set(mejor,scanner.get(mejor)+20);
 							}
 							break;
 			case "moveE": 	if (radar.get(13) !=1) {
-							mapa.get(y).set(x+1,1);
-							
-							x++;
 							salir=false;
 							} else {
 								//scanner.set(mejor,scanner.get(mejor)+20);
@@ -366,6 +341,7 @@ public class BotZ extends SingleAgent {
 			e.printStackTrace();
 		}
 		System.out.println(movimiento);
+		lastAction = movimiento;
 		return result;
 	}
 	
@@ -388,6 +364,7 @@ public class BotZ extends SingleAgent {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		lastAction="refuel";
 		return result;
 	}
 	
@@ -411,7 +388,6 @@ public class BotZ extends SingleAgent {
 				System.out.println("Estamos en: "+x+","+y);
 				if(radar.get(12)==2) {
 					System.out.println("Encontrado en el punto:("+x+","+y+")");
-					Map.getInstance().setMapComposition(x, y, Map.MapState.GOAL);
 					moverse = false;
 				} else {
 					if (bateria < 10) System.out.println("Repostando "+refuel()); else System.out.println("Nos movemos "+move(think()));
