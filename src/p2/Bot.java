@@ -13,7 +13,7 @@ import es.upv.dsic.gti_ia.core.SingleAgent;
 public class Bot extends SingleAgent {
 	
 	String key;
-	int x=100, y=100, bateria;
+	int x, y, bateria;
 	ArrayList<Integer> scanner;
 	ArrayList<Integer> radar;
 	String lastAction;
@@ -39,7 +39,7 @@ public class Bot extends SingleAgent {
 			mapa.add(aux);
 		}
 		mapa.get(y).set(x,1);
-		Map.getInstance().setMapComposition(x, y, Map.MapState.ROBOT);
+		//
 	}
 	
 	
@@ -115,7 +115,7 @@ public class Bot extends SingleAgent {
 			if (data.has("battery")) {
 				bateria = data.getInt("battery");
 				received = true;
-				System.out.println("Bot: battery received: "+bateria);
+				//System.out.println("Bot: battery received: "+bateria);
 			}
 		}
 	}
@@ -135,7 +135,8 @@ public class Bot extends SingleAgent {
 				JSONObject gpsXY = new JSONObject(data.getString("gps"));
 				x = gpsXY.getInt("x");
 				y = gpsXY.getInt("y");
-				System.out.println("Bot: GPS received: X="+x+", Y="+y);
+				//System.out.println("Bot: GPS received: X="+x+", Y="+y);
+				Map.getInstance().setMapComposition(x, y, Map.MapState.ROBOT);
 				received = true;
 			}
 		}
@@ -185,6 +186,30 @@ public class Bot extends SingleAgent {
 				}
 				radar = res;
 				received = true;
+			}
+		}
+	}
+	
+	public void updateAll() {
+		for (int i=0;i<25;i++) {
+			if(i!=12) {
+				int xaux = (i%5)-2;
+				int aux = i/5;
+				int f = aux%1;
+				int yaux = (aux-f)-2;
+				int z = radar.get(i);
+				int actualx = x-xaux;
+				int actualy = y-yaux;
+				if (actualx >= 0 && actualy >= 0) {
+					mapa.get(y-yaux).set(x-xaux,z);
+					switch(z) {
+						case 0: Map.getInstance().setMapComposition(x-xaux, y-yaux, Map.MapState.KNOWN);
+								break;
+						case 1: Map.getInstance().setMapComposition(x-xaux, y-yaux, Map.MapState.OBSTACLE);
+								break;
+						case 2: Map.getInstance().setMapComposition(x-xaux, y-yaux, Map.MapState.GOAL);
+					}
+				}
 			}
 		}
 	}
@@ -240,7 +265,7 @@ public class Bot extends SingleAgent {
 		switch (res) {
 			case "moveN": 	if (radar.get(7) !=1) {
 							mapa.get(y-1).set(x,1);
-							Map.getInstance().setMapComposition(x, y-1, Map.MapState.ROBOT);
+							
 							
 						  	y--;
 						  	salir=false;
@@ -250,7 +275,7 @@ public class Bot extends SingleAgent {
 						  	break;
 			case "moveNW": 	if (radar.get(6) !=1) {
 							mapa.get(y-1).set(x-1,1);
-							Map.getInstance().setMapComposition(x-1, y-1, Map.MapState.ROBOT);
+							
 			  				y--;
 			  				x--;
 			  				salir=false;
@@ -260,7 +285,7 @@ public class Bot extends SingleAgent {
 			  				break;
 			case "moveNE":  if (radar.get(8) !=1) {
 							mapa.get(y-1).set(x+1,1);
-							Map.getInstance().setMapComposition(x+1, y-1, Map.MapState.ROBOT);
+							
 			  				y--;
 			  				x++;
 			  				salir=false;
@@ -270,7 +295,7 @@ public class Bot extends SingleAgent {
 			  				break;
 			case "moveS": 	if (radar.get(17) !=1) {
 							mapa.get(y+1).set(x,1);
-							Map.getInstance().setMapComposition(x, y+1, Map.MapState.ROBOT);
+							
 			  				y++;
 			  				salir=false;
 							} else {
@@ -279,7 +304,7 @@ public class Bot extends SingleAgent {
 			  				break;
 			case "moveSW":  if (radar.get(16) !=1) {
 							mapa.get(y+1).set(x-1,1);
-							Map.getInstance().setMapComposition(x-1, y+1, Map.MapState.ROBOT);
+							
 			  				y++;
 			  				x--;
 			  				salir=false;
@@ -289,7 +314,7 @@ public class Bot extends SingleAgent {
 			  				break;
 			case "moveSE": 	if (radar.get(18) !=1) {
 							mapa.get(y+1).set(x+1,1);
-							Map.getInstance().setMapComposition(x+1, y+1, Map.MapState.ROBOT);
+							
 							y++;
 							x++;
 							salir=false;
@@ -299,7 +324,7 @@ public class Bot extends SingleAgent {
 							break;
 			case "moveW": 	if (radar.get(11) !=1) {
 							mapa.get(y).set(x-1,1);
-							Map.getInstance().setMapComposition(x-1, y, Map.MapState.ROBOT);
+							
 							x--;
 							salir=false;
 							} else {
@@ -308,7 +333,7 @@ public class Bot extends SingleAgent {
 							break;
 			case "moveE": 	if (radar.get(13) !=1) {
 							mapa.get(y).set(x+1,1);
-							Map.getInstance().setMapComposition(x+1, y, Map.MapState.ROBOT);
+							
 							x++;
 							salir=false;
 							} else {
@@ -340,7 +365,6 @@ public class Bot extends SingleAgent {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		bateria--;
 		System.out.println(movimiento);
 		return result;
 	}
@@ -364,7 +388,6 @@ public class Bot extends SingleAgent {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		bateria = 100;
 		return result;
 	}
 	
@@ -374,23 +397,24 @@ public class Bot extends SingleAgent {
 		
 		login();
 		try {
-			requestBattery();
-			requestGPS();
-			requestScanner();
-			requestRadar();
-			refuel();
+			
 			while(moverse) {
-				//System.out.println(bateria);
-				//System.out.println(scanner.toString());
+				requestBattery();
+				requestGPS();
 				requestScanner();
 				requestRadar();
+				updateAll();
+				//System.out.println(bateria);
+				//System.out.println(scanner.toString());
+				
 				System.out.println(radar.toString());
 				System.out.println("Estamos en: "+x+","+y);
 				if(radar.get(12)==2) {
 					System.out.println("Encontrado en el punto:("+x+","+y+")");
+					Map.getInstance().setMapComposition(x, y, Map.MapState.GOAL);
 					moverse = false;
 				} else {
-					if (bateria < 25) System.out.println("Repostando "+refuel()); else System.out.println("Nos movemos "+move(think()));
+					if (bateria < 10) System.out.println("Repostando "+refuel()); else System.out.println("Nos movemos "+move(think()));
 				}
 			}
 		} catch (InterruptedException | JSONException e) {

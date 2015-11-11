@@ -42,8 +42,8 @@ public class Map extends JPanel {
     private int pixelHeight = 4;
     
     // Map size
-    private int width = 100;
-    private int height = 100;
+    private int width = 200;
+    private int height = 200;
     
     // Pixel buffers to draw on the map. Will be filled with pixels of the right color
     private int[] robotSurface    = new int[pixelHeight * pixelWidth];
@@ -92,8 +92,10 @@ public class Map extends JPanel {
 	}
 	
 	public void setMapComposition(int x, int y, MapState newState) {
+		if (x>0 && y>0 && x<width && y<width) {
 		mapComposition[width * (x-1) + (y-1)] = newState;
 		super.repaint();
+		}
 	}
 	
     @Override
@@ -115,6 +117,8 @@ public class Map extends JPanel {
                 		surface = goalSurface; break;
                 	case ROBOT:
                 		surface = robotSurface; break;
+                	case OBSTACLE:
+                		surface = obstacleSurface; break;
                 	default:
             			throw new IllegalStateException("Unknown surface type " + mapComposition[col * width + row]);
             	}
