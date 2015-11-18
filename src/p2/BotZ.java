@@ -15,10 +15,12 @@ public class BotZ extends SingleAgent {
 	String key;
 	int x, y, bateria;
 	public ArrayList<Integer> scanner;
-	ArrayList<Integer> radar;
+	public ArrayList<Integer> radar;
 	String lastAction;
+	String wantedAction;
 	ArrayList<ArrayList<Integer>> mapa;
 	int movimientos;
+	boolean followWall;
 	
 	public BotZ(AgentID aid) throws Exception {
 		super(aid);
@@ -39,6 +41,7 @@ public class BotZ extends SingleAgent {
 			mapa.add(aux);
 		}
 		//
+		followWall = false;
 	}
 	
 	
@@ -193,17 +196,15 @@ public class BotZ extends SingleAgent {
 		for (int i=0;i<25;i++) {
 			if(i!=12) {
 				int xaux = (i%5)-2;
-				int aux = i/5;
-				int f = aux%1;
-				int yaux = (aux-f)-2;
+				//int aux = i/5;
+				//int f = aux%1;
+				int yaux = i/5;
 				int z = radar.get(i);
 				int actualx = x-xaux;
 				int actualy = y-yaux;
 				if (actualx >= 0 && actualy >= 0) {
 					if (mapa.get(actualy).get(actualx) != 3) {
 						mapa.get(y-yaux).set(x-xaux,z);
-					} else {
-						//scanner.set(i,scanner.get(i)+22);
 					}
 					switch(z) {
 						case 0: Map.getInstance().setMapComposition(x-xaux, y-yaux, Map.MapState.KNOWN);
@@ -235,8 +236,8 @@ public class BotZ extends SingleAgent {
 		}
 		*/
 		for (int i=0;i<scanner.size();i++) {
-			if (/*radar.get(i) !=1 && */i!=12) {
-				if (scanner.get(i) < menor) {
+			if (radar.get(i) !=1/* && i!=12*/) {
+				if (scanner.get(i) <= menor) {
 					pos = i;
 					menor = scanner.get(i);
 				}
@@ -250,76 +251,168 @@ public class BotZ extends SingleAgent {
 		
 		int mejor = posicionMenor();
 		
-		
-		if (mejor==0||mejor==1||mejor==5||mejor==6) res = "moveNW";
-		if (mejor==3||mejor==4||mejor==8||mejor==9) res = "moveNE";
-		if (mejor==15||mejor==16||mejor==20||mejor==21) res = "moveSW";
-		if (mejor==18||mejor==19||mejor==23||mejor==24) res = "moveSE";
-		
-		/*if (mejor==5) res = "moveW";
-		if (mejor==15) res = "moveW";
-		if (mejor==9) res = "moveE";
-		if (mejor==19) res = "moveE";
-		*/
-		if (mejor==2||mejor==7) res = "moveN";
-		if (mejor==13||mejor==14) res = "moveE";
-		if (mejor==17||mejor==22) res = "moveS";
-		if (mejor==10||mejor==11) res = "moveW";
-		boolean salir=false;
-		do {
-			switch (res) {
-				case "moveN": 	if (radar.get(7) !=1) {
-							  		
+		if (followWall) {
+			System.out.println("Estamos en follow. wanted = "+wantedAction+" lastAction="+lastAction);
+			switch (wantedAction) {
+			case "moveN": 	if (radar.get(7) !=1) {
+						  		res = wantedAction;
+						  		followWall = false;
+							} else {
+								res = lastAction;
+							}
+						  	break;
+			case "moveNW": 	if (radar.get(6) !=1) {
+			  					res = wantedAction;
+			  					followWall = false;
+							} else {
+								res = lastAction;
+							}
+							break;
+			case "moveNE":  if (radar.get(8) !=1) {
+			  					res = wantedAction;
+			  					followWall = false;
+							} else {
+								res = lastAction;
+							}
+							break;
+			case "moveS": 	if (radar.get(17) !=1) {
+								res = wantedAction;
+								followWall = false;
+							} else {
+								res = lastAction;
+							}
+							break;
+			case "moveSW":  if (radar.get(16) !=1) {
+								res = wantedAction;
+								followWall = false;
+							} else {
+								res = lastAction;
+							}
+							break;
+			case "moveSE": 	if (radar.get(18) !=1) {
+								res = wantedAction;
+								followWall = false;
+							} else {
+								res = lastAction;
+							}
+							break;
+			case "moveW": 	if (radar.get(11) !=1) {
+								res = wantedAction;
+								followWall = false;
+							} else {
+								res = lastAction;
+							}
+							break;
+			case "moveE": 	if (radar.get(13) !=1) {
+									res = wantedAction;
+									followWall = false;
 								} else {
-									if(scanner.get(0)<scanner.get(4)) res = "moveE";
-									else res="moveW";
+									res = lastAction;
 								}
-							  	break;
-				case "moveNW": 	if (radar.get(6) !=1) {
-				  					
-				  				} else {
-				  					if(scanner.get(20)<scanner.get(24)) res = "moveE";
-									else res="moveW";
-				  				}
-				  				break;
-				case "moveNE":  if (radar.get(8) !=1) {
-				  				;
-								} else {
-									res=lastAction;
-								}
-				  				break;
-				case "moveS": 	if (radar.get(17) !=1) {
-				  				;
-								} else {
-									if(scanner.get(20)<scanner.get(24)) res = "moveE";
-									else res="moveW";
-								}
-				  				break;
-				case "moveSW":  if (radar.get(16) !=1) {
-				  				;
-								} else {
-									res=lastAction;
-								}
-				  				break;
-				case "moveSE": 	if (radar.get(18) !=1) {
-								} else {
-									res=lastAction;
-								}
-								break;
-				case "moveW": 	if (radar.get(11) !=1) {
-								} else {
-									if(scanner.get(4)<scanner.get(24)) res = "moveN";
-									else res="moveS";
-								}
-								break;
-				case "moveE": 	if (radar.get(13) !=1) {
-								} else {
-									if(scanner.get(0)<scanner.get(20)) res = "moveN";
-									else res="moveS";
-								}
-								break;
+							break;
 			}
-		} while(salir);
+		} else {
+			if (mejor==0||mejor==1||mejor==5||mejor==6) res = "moveNW";
+			if (mejor==3||mejor==4||mejor==8||mejor==9) res = "moveNE";
+			if (mejor==15||mejor==16||mejor==20||mejor==21) res = "moveSW";
+			if (mejor==18||mejor==19||mejor==23||mejor==24) res = "moveSE";
+			
+			if (mejor==2||mejor==7) res = "moveN";
+			if (mejor==13||mejor==14) res = "moveE";
+			if (mejor==17||mejor==22) res = "moveS";
+			if (mejor==10||mejor==11) res = "moveW";
+			if (mejor==12) {
+				res = lastAction;
+				wantedAction= "moveN";
+				followWall = true;
+			} else {
+				switch (res) {
+					case "moveN": 	if (radar.get(7) !=1) {
+								  		
+									} else {
+										if (radar.get(6) == 1 && radar.get(8) == 1) {
+											wantedAction = res;
+											res = lastAction;
+											followWall = true;
+										}
+									}
+								  	break;
+					case "moveNW": 	if (radar.get(6) !=1) {
+					  					
+					  				} else {
+					  					if (radar.get(7) == 1 && radar.get(11) == 1) {
+											wantedAction = res;
+					  						res = "moveS";
+											followWall = true;
+										}
+					  				}
+					  				break;
+					case "moveNE":  if (radar.get(8) !=1) {
+					  				
+									} else {
+										if (radar.get(7) == 1 && radar.get(13) == 1) {
+											wantedAction = res;
+											res = "moveS";
+											followWall = true;
+										} else {
+											if (radar.get(7)==0) {
+												res = "moveN";
+											}
+										}
+									}
+					  				break;
+					case "moveS": 	if (radar.get(17) !=1) {
+				
+									} else {
+										if (radar.get(16) == 1 && radar.get(18) == 1) {
+											wantedAction = res;
+											res = lastAction;
+											followWall = true;
+										}
+									}
+					  				break;
+					case "moveSW":  if (radar.get(16) !=1) {
+					  					
+									} else {
+										if (radar.get(11) == 1 && radar.get(17) == 1) {
+											wantedAction = res;
+											res = "moveN";
+											followWall = true;
+										}
+									}
+					  				break;
+					case "moveSE": 	if (radar.get(18) !=1) {
+									} else {
+										if (radar.get(13) == 1 && radar.get(17) == 1) {
+											wantedAction = res;
+											res = "moveN";
+											followWall = true;
+										}
+									}
+									break;
+					case "moveW": 	if (radar.get(11) !=1) {
+									
+									} else {
+										if (radar.get(6) == 1 && radar.get(16) == 1) {
+											wantedAction = res;
+											res = lastAction;
+											followWall = true;
+										}
+									}
+									break;
+					case "moveE": 	if (radar.get(13) !=1) {
+									
+									} else {
+										if (radar.get(8) == 1 && radar.get(18) == 1) {
+											wantedAction = res;
+											res = lastAction;
+											followWall = true;
+										}
+									}
+									break;
+				}
+			}
+		}
 		movimientos++;
 		return res;
 	}
@@ -385,9 +478,16 @@ public class BotZ extends SingleAgent {
 				requestRadar();
 				updateAll();
 				//System.out.println(bateria);
-				//System.out.println(scanner.toString());
+				System.out.println("Scanner:");
+				for (int i=0;i<5;i++) {
+					System.out.println(scanner.get((i*5)+0)+" "+scanner.get((i*5)+1)+" "+scanner.get((i*5)+2)+" "+scanner.get((i*5)+3)+" "+scanner.get((i*5)+4));
+				}
 				
-				System.out.println(radar.toString());
+				System.out.println("\nRadar:");
+				for (int i=0;i<5;i++) {
+					System.out.println(radar.get((i*5)+0)+" "+radar.get((i*5)+1)+" "+radar.get((i*5)+2)+" "+radar.get((i*5)+3)+" "+radar.get((i*5)+4));
+				}
+				
 				System.out.println("Estamos en: "+x+","+y);
 				if(radar.get(12)==2) {
 					System.out.println("Encontrado en el punto:("+x+","+y+")");

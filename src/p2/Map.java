@@ -93,7 +93,7 @@ public class Map extends JPanel {
 	
 	public void setMapComposition(int x, int y, MapState newState) {
 		if (x>0 && y>0 && x<width && y<width) {
-		mapComposition[width * (x-1) + (y-1)] = newState;
+		mapComposition[width * (x) + (y)] = newState;
 		super.repaint();
 		}
 	}
