@@ -42,8 +42,8 @@ public class Map extends JPanel {
     private int pixelHeight = 4;
     
     // Map size
-    private int width = 200;
-    private int height = 200;
+    private int width = 100;
+    private int height = 100;
     
     // Pixel buffers to draw on the map. Will be filled with pixels of the right color
     private int[] robotSurface    = new int[pixelHeight * pixelWidth];
