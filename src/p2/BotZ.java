@@ -18,7 +18,9 @@ public class BotZ extends SingleAgent {
 	public ArrayList<Integer> radar;
 	String lastAction;
 	String wantedAction;
-	ArrayList<ArrayList<Integer>> mapa;
+	String wallDirection;
+	//ArrayList<ArrayList<Integer>> mapa;
+	int[][] mapa;
 	int movimientos;
 	boolean followWall;
 	
@@ -32,15 +34,15 @@ public class BotZ extends SingleAgent {
 		radar = new ArrayList<Integer>(25);
 		lastAction = "idle";
 		movimientos = 0;
-		mapa = new ArrayList<ArrayList<Integer>>();
+		/*mapa = new ArrayList<ArrayList<Integer>>();
 		ArrayList<Integer> aux = new ArrayList<Integer>();
 		for (int i=0;i<500;i++) {
-			aux.add(0);
+			aux.add(i,0);
 		}
 		for (int i=0;i<500;i++) {
-			mapa.add(aux);
-		}
-		//
+			mapa.add(i,aux);
+		}*/
+		mapa = new int[500][500];
 		followWall = false;
 	}
 	
@@ -50,7 +52,7 @@ public class BotZ extends SingleAgent {
 		
 		try {
 			json.put("command", "login");
-			json.put("world", "map2");
+			json.put("world", "map8");
 			json.put("radar", RescueBots.nRadar);
 			json.put("scanner", RescueBots.nScanner);
 			json.put("gps", RescueBots.nGPS);
@@ -137,7 +139,6 @@ public class BotZ extends SingleAgent {
 				x = gpsXY.getInt("x");
 				y = gpsXY.getInt("y");
 				//System.out.println("Bot: GPS received: X="+x+", Y="+y);
-				mapa.get(y).set(x,3);
 				Map.getInstance().setMapComposition(x, y, Map.MapState.ROBOT);
 				received = true;
 			}
@@ -193,19 +194,19 @@ public class BotZ extends SingleAgent {
 	}
 	
 	public void updateAll() {
+		System.out.println("Actualizo:"+x+" "+y);
+		System.out.println(mapa[x][y]);
+		mapa[x][y]++;
 		for (int i=0;i<25;i++) {
 			if(i!=12) {
 				int xaux = (i%5)-2;
 				//int aux = i/5;
 				//int f = aux%1;
-				int yaux = i/5;
+				int yaux = (i/5)-2;
 				int z = radar.get(i);
-				int actualx = x-xaux;
-				int actualy = y-yaux;
+				int actualx = x+xaux;
+				int actualy = y+yaux;
 				if (actualx >= 0 && actualy >= 0) {
-					if (mapa.get(actualy).get(actualx) != 3) {
-						mapa.get(y-yaux).set(x-xaux,z);
-					}
 					switch(z) {
 						case 0: Map.getInstance().setMapComposition(x-xaux, y-yaux, Map.MapState.KNOWN);
 								break;
@@ -250,65 +251,198 @@ public class BotZ extends SingleAgent {
 		String res = null;
 		
 		int mejor = posicionMenor();
-		
+		for (int i=0;i<25;i++) {
+			int xaux = (i%5)-2;
+			int yaux = (i/5)-2;
+			int actualx = x+xaux;
+			int actualy = y+yaux;
+			if (actualx >= 0 && actualy >=0 && actualx <500 && actualy <500) scanner.set(i,scanner.get(i)+(mapa[actualx][actualy]*2));
+		}
+		switch (lastAction) {
+		case "moveN":
+			scanner.set(7,scanner.get(7)-2);
+			scanner.set(6,scanner.get(6)-1);
+			scanner.set(8,scanner.get(8)-1);
+			break;
+		case "moveS":
+			scanner.set(17,scanner.get(17)-2);
+			scanner.set(16,scanner.get(16)-1);
+			scanner.set(18,scanner.get(18)-1);
+			break;
+		case "moveNW":
+			scanner.set(6,scanner.get(6)-2);
+			scanner.set(7,scanner.get(7)-1);
+			scanner.set(11,scanner.get(11)-1);
+			break;
+		case "moveNE":
+			scanner.set(8,scanner.get(8)-2);
+			scanner.set(7,scanner.get(7)-1);
+			scanner.set(13,scanner.get(13)-1);
+			break;
+		case "moveSW":
+			scanner.set(16,scanner.get(16)-2);
+			scanner.set(17,scanner.get(17)-1);
+			scanner.set(11,scanner.get(11)-1);
+			break;
+		case "moveSE":
+			scanner.set(18,scanner.get(18)-2);
+			scanner.set(17,scanner.get(17)-1);
+			scanner.set(13,scanner.get(13)-1);
+			break;
+		case "moveW":
+			scanner.set(11,scanner.get(11)-2);
+			scanner.set(6,scanner.get(6)-1);
+			scanner.set(16,scanner.get(16)-1);
+			break;
+		case "moveE": 
+			scanner.set(13,scanner.get(13)-2);
+			scanner.set(8,scanner.get(8)-1);
+			scanner.set(18,scanner.get(18)-1);
+			break;
+		}
+		System.out.println("Scanner:");
+		for (int i=0;i<5;i++) {
+			System.out.println(scanner.get((i*5)+0)+" "+scanner.get((i*5)+1)+" "+scanner.get((i*5)+2)+" "+scanner.get((i*5)+3)+" "+scanner.get((i*5)+4));
+		}
 		if (followWall) {
+			switch (wallDirection) {
+			case "north" :
+				scanner.set(7,scanner.get(7)-10);
+				scanner.set(6,scanner.get(6)-10);
+				scanner.set(8,scanner.get(8)-10);
+				if (wantedAction == "moveE") scanner.set(13,scanner.get(13)-10);
+				else scanner.set(11,scanner.get(11)-10);
+				break;
+			case "south" :
+				scanner.set(17,scanner.get(17)-10);
+				scanner.set(16,scanner.get(16)-10);
+				scanner.set(18,scanner.get(18)-10);
+				if (wantedAction == "moveE") scanner.set(13,scanner.get(13)-10);
+				else scanner.set(11,scanner.get(11)-10);
+				break;
+			case "east" :
+				scanner.set(8,scanner.get(8)-10);
+				scanner.set(13,scanner.get(13)-10);
+				scanner.set(18,scanner.get(18)-10);
+				if (wantedAction == "moveN") scanner.set(7,scanner.get(7)-10);
+				else scanner.set(17,scanner.get(17)-10);
+				break;
+			case "west" :
+				scanner.set(6,scanner.get(6)-10);
+				scanner.set(11,scanner.get(11)-10);
+				scanner.set(16,scanner.get(16)-10);
+				if (wantedAction == "moveN") scanner.set(7,scanner.get(7)-10);
+				else scanner.set(17,scanner.get(17)-10);
+			}
 			System.out.println("Estamos en follow. wanted = "+wantedAction+" lastAction="+lastAction);
 			switch (wantedAction) {
-			case "moveN": 	if (radar.get(7) !=1) {
+			case "moveN": 	if (radar.get(7) !=1 && mapa[x][y-1] == 0) {
 						  		res = wantedAction;
 						  		followWall = false;
-							} else {
-								res = lastAction;
-							}
+							} else if (scanner.get(6) <= scanner.get(8) && radar.get(6) !=1) {res = "moveNW"; followWall=false;}
+							else if (scanner.get(8) <= scanner.get(6) && radar.get(8) !=1) {res = "moveNE"; followWall=false;}
+							else if (scanner.get(11) <= scanner.get(13) && radar.get(11) !=1) res = "moveW";
+							else if (scanner.get(13) <= scanner.get(11) && radar.get(11) !=1) res = "moveE";
+							else if (scanner.get(16) <= scanner.get(18) && radar.get(16) !=1) res = "moveSW";
+							else if (scanner.get(18) <= scanner.get(16) && radar.get(18) !=1) res = "moveSE";
+							else if (radar.get(17) !=1) res = "moveS";
+							else if (radar.get(6) !=1) {res = "moveNW"; followWall=false;}
+							else if (radar.get(8) !=1) {res = "moveNE"; followWall=false;}
 						  	break;
 			case "moveNW": 	if (radar.get(6) !=1) {
 			  					res = wantedAction;
 			  					followWall = false;
-							} else {
-								res = lastAction;
-							}
+							} else if (scanner.get(11) <= scanner.get(7) && radar.get(11) !=1) {res = "moveW"; followWall=false;}
+  							else if (scanner.get(10) <= scanner.get(2) && radar.get(11) !=1) {res = "moveW"; followWall=false;}
+							else if (scanner.get(7) <= scanner.get(8) && radar.get(7) != 1) {res = "moveN"; followWall=false;}
+							else if (scanner.get(8) <= scanner.get(16) && radar.get(8) !=1) res = "moveNE";
+							else if (scanner.get(16) <= scanner.get(13) && radar.get(16) !=1) {res = "moveSW"; followWall=false;}
+							else if (scanner.get(13) <= scanner.get(17) && radar.get(13) !=1) res = "moveE";
+							else if (scanner.get(17) <= scanner.get(18) && radar.get(17) !=1) res = "moveS";
+							else if (radar.get(18) !=1) res = "moveSE";
+							else if (scanner.get(11) <= scanner.get(7) && radar.get(11) !=1) {res = "moveW"; followWall=false;}
+							else if (radar.get(7) !=1) res = "moveN";
 							break;
 			case "moveNE":  if (radar.get(8) !=1) {
 			  					res = wantedAction;
 			  					followWall = false;
-							} else {
-								res = lastAction;
-							}
+							} else if (scanner.get(13) <= scanner.get(7) && radar.get(13) !=1) res = "moveE";
+							else if (scanner.get(14) <= scanner.get(2) && radar.get(13) !=1) res = "moveE";
+							else if (scanner.get(7) <= scanner.get(6) && radar.get(7) != 1) res = "moveN";
+							else if (scanner.get(6) <= scanner.get(18) && radar.get(6) !=1) res = "moveNW";
+							else if (scanner.get(18) <= scanner.get(11) && radar.get(18) !=1) res = "moveSE";
+							else if (scanner.get(11) <= scanner.get(17) && radar.get(11) !=1) res = "moveW";
+							else if (scanner.get(17) <= scanner.get(16) && radar.get(17) !=1) res = "moveS";
+							else if (radar.get(16) !=1) res = "moveSW";
+							else if (scanner.get(13) <= scanner.get(7) && radar.get(13) !=1) res = "moveE";
+							else if (radar.get(7) !=1) res = "moveN";
 							break;
-			case "moveS": 	if (radar.get(17) !=1) {
+			case "moveS": 	if (radar.get(17) !=1 && mapa[x][y+1] == 0) {
 								res = wantedAction;
 								followWall = false;
-							} else {
-								res = lastAction;
-							}
+							} else if (scanner.get(16) <= scanner.get(18) && radar.get(16) !=1) {res = "moveSW"; followWall=false;}
+							else if (scanner.get(18) <= scanner.get(16) && radar.get(18) !=1) {res = "moveSE"; followWall=false;}
+							else if (scanner.get(11) <= scanner.get(13) && radar.get(11) !=1) res = "moveW";
+							else if (scanner.get(13) <= scanner.get(11) && radar.get(13) !=1) res = "moveE";
+							else if (scanner.get(6) <= scanner.get(8) && radar.get(6) !=1) res = "moveNW";
+							else if (scanner.get(8) <= scanner.get(6) && radar.get(8) !=1) res = "moveNE";
+							else if (radar.get(7) !=1) res = "moveN";
+							else if (radar.get(16) !=1) {res = "moveSW"; followWall=false;}
+							else if (radar.get(18) !=1) {res = "moveSE"; followWall=false;}
 							break;
 			case "moveSW":  if (radar.get(16) !=1) {
 								res = wantedAction;
 								followWall = false;
-							} else {
-								res = lastAction;
-							}
+							} else if (scanner.get(11) <= scanner.get(17) && radar.get(11) !=1) res = "moveW";
+							else if (scanner.get(10) <= scanner.get(22) && radar.get(11) !=1) res = "moveW";
+							else if (scanner.get(17) <= scanner.get(18) && radar.get(17) != 1) res = "moveS";
+							else if (scanner.get(18) <= scanner.get(13) && radar.get(18) !=1) res = "moveSE";
+							else if (scanner.get(6) <= scanner.get(13) && radar.get(6) !=1) res = "moveNW";
+							else if (scanner.get(13) <= scanner.get(7) && radar.get(13) !=1) res = "moveE";
+							else if (scanner.get(7) <= scanner.get(8) && radar.get(7) !=1) res = "moveN";
+							else if (radar.get(8) !=1) res = "moveNE";
+							else if (scanner.get(11) <= scanner.get(17) && radar.get(11) !=1) res = "moveW";
+							else if (radar.get(17) !=1) res = "moveS";
 							break;
 			case "moveSE": 	if (radar.get(18) !=1) {
 								res = wantedAction;
 								followWall = false;
-							} else {
-								res = lastAction;
-							}
+							} else if (scanner.get(13) <= scanner.get(17) && radar.get(13) !=1) res = "moveE";
+							else if (scanner.get(14) <= scanner.get(22) && radar.get(13) !=1) res = "moveE";
+							else if (scanner.get(17) <= scanner.get(16) && radar.get(17) != 1) res = "moveS";
+							else if (scanner.get(16) <= scanner.get(8) && radar.get(16) !=1) res = "moveSW";
+							else if (scanner.get(8) <= scanner.get(11) && radar.get(8) !=1) res = "moveNE";
+							else if (scanner.get(11) <= scanner.get(7) && radar.get(11) !=1) res = "moveW";
+							else if (scanner.get(7) <= scanner.get(6) && radar.get(7) !=1) res = "moveN";
+							else if (radar.get(6) !=1) res = "moveNW";
+							else if (scanner.get(13) <= scanner.get(17) && radar.get(13) !=1) res = "moveE";
+							else if (radar.get(17) !=1) res = "moveS";
 							break;
-			case "moveW": 	if (radar.get(11) !=1) {
+			case "moveW": 	if (radar.get(11) !=1 && mapa[x-1][y] == 0) {
 								res = wantedAction;
 								followWall = false;
-							} else {
-								res = lastAction;
-							}
+							} else if (scanner.get(16) <= scanner.get(6) && radar.get(16) !=1) {res = "moveSW"; followWall=false;}
+							else if (scanner.get(6) <= scanner.get(16) && radar.get(6) !=1) {res = "moveNW"; followWall=false;}
+							else if (scanner.get(17) <= scanner.get(7) && radar.get(17) !=1) res = "moveS";
+							else if (radar.get(7) !=1) res = "moveN";
+							else if (scanner.get(8) <= scanner.get(18) && radar.get(8) !=1) res = "moveNE";
+							else if (scanner.get(18) <= scanner.get(13) && radar.get(18) !=1) res = "moveSE";
+							else if (radar.get(13) !=1 && mapa[x+1][y] != 3) res = "moveE";
+							else if (radar.get(6) !=1) {res = "moveNW"; followWall=false;}
+							else if (radar.get(16) !=1) {res = "moveSW"; followWall=false;}
 							break;
-			case "moveE": 	if (radar.get(13) !=1) {
+			case "moveE": 	if (radar.get(13) !=1 && mapa[x+1][y] == 0) {
 									res = wantedAction;
 									followWall = false;
-								} else {
-									res = lastAction;
-								}
+								} else if (scanner.get(18) <= scanner.get(8) && radar.get(18) !=1) {res = "moveSE"; followWall=false;}
+								else if (scanner.get(8) <= scanner.get(18) && radar.get(8) !=1) {res = "moveNE"; followWall=false;}
+								else if (scanner.get(7) <= scanner.get(17) && radar.get(7) !=1) res = "moveN";
+								else if (scanner.get(6) <= scanner.get(16) && radar.get(6) !=1) res = "moveNW";
+								else if (radar.get(11) !=1 && mapa[x-1][y] != 3) res = "moveW";
+								else if (scanner.get(16) <= scanner.get(11) && radar.get(16) !=1) res = "moveSW";
+								else if (scanner.get(17) <= scanner.get(7) && radar.get(17) !=1) res = "moveS";
+								else if (radar.get(8) !=1) {res = "moveNE"; followWall=false;}
+								else if (radar.get(18) !=1) {res = "moveSE"; followWall=false;}
 							break;
 			}
 		} else {
@@ -332,157 +466,249 @@ public class BotZ extends SingleAgent {
 								  		
 									} else {
 										if (radar.get(6) == 1 && radar.get(8) == 1) {
-											wantedAction = res;
-											res = lastAction;
-											followWall = true;
-										} else if (scanner.get(6) <= scanner.get(8) && radar.get(6) !=1 && mapa.get(y-1).get(x-1) !=3) res = "moveNW";
-										else if (scanner.get(8) <= scanner.get(6) && radar.get(8) !=1 && mapa.get(y-1).get(x+1) !=3) res = "moveNE";
-										else if (scanner.get(11) <= scanner.get(13) && radar.get(11) !=1 && mapa.get(y).get(x+1) !=3) res = "moveE";
-										else if (radar.get(11) !=1 && mapa.get(y).get(x-1) !=3) res = "moveW";
+											if (scanner.get(10) <= scanner.get(14) && radar.get(11) !=1) {
+												wantedAction = res;
+												res = "moveW";
+												wallDirection = "west";
+												followWall = true;
+											} else if (radar.get(13) !=1){
+												wantedAction = res;
+												res = "moveE";
+												wallDirection = "east";
+												followWall = true;
+											} else if (radar.get(18) !=1) res = "moveSE";
+											else if (radar.get(17) !=1) res = "moveS";
+										} else if (scanner.get(6) <= scanner.get(8) && radar.get(6) !=1) res = "moveNW";
+										else if (scanner.get(8) <= scanner.get(6) && radar.get(8) !=1) res = "moveNE";
+										else if (scanner.get(11) <= scanner.get(13) && radar.get(11) !=1) res = "moveE";
+										else if (scanner.get(13) <= scanner.get(11) && radar.get(11) !=1) res = "moveW";
+										else if (scanner.get(16) <= scanner.get(18) && radar.get(16) !=1) res = "moveSW";
+										else if (scanner.get(18) <= scanner.get(16) && radar.get(18) !=1) res = "moveSE";
+										else if (radar.get(17) !=1) res = "moveS";
+										else if (radar.get(6) !=1) res = "moveNW";
+										else if (radar.get(8) !=1) res = "moveNE";
 									}
 								  	break;
 					case "moveNW": 	if (radar.get(6) !=1) {
 					  					
 					  				} else {
 					  					if (radar.get(7) == 1 && radar.get(11) == 1) {
-					  						if (scanner.get(8) <= scanner.get(17) && radar.get(8) !=1 && mapa.get(y-1).get(x+1) !=3) {
+					  						if (scanner.get(8) <= scanner.get(17) && radar.get(8) !=1) {
 					  							res = "moveNE";
 					  						}
-					  						else if (scanner.get(16) <= scanner.get(17) && radar.get(16) !=1 && mapa.get(y+1).get(x-1) != 3) {
+					  						else if (scanner.get(16) <= scanner.get(17) && radar.get(16) !=1 && mapa[x-1][y+1] != 3) {
 					  							res = "moveSW";
 					  						}
-					  						else if ((scanner.get(9)) <= scanner.get(17) && radar.get(9) !=1 && mapa.get(y).get(x+1) !=3) {
+					  						else if ((scanner.get(9)) <= scanner.get(17) && radar.get(13) !=1) {
 					  							res = "moveE";
-					  						} else if(scanner.get(13) <= scanner.get(17) && radar.get(13) !=1 && mapa.get(y).get(x+1) !=3) {
+					  						} else if ((scanner.get(3)) <= scanner.get(17) && radar.get(13) !=1) {
+					  							res = "moveE";
+					  						} else if(scanner.get(13) <= scanner.get(17) && radar.get(13) !=1) {
 					  							res = "moveE";
 					  						} else {
-					  							wantedAction = res;
+					  							wantedAction = "moveW";
 					  							res = "moveS";
+					  							wallDirection = "south";
 					  							followWall = true;
 					  						}
 										}
-					  							else if (scanner.get(11) <= scanner.get(7) && radar.get(11) !=1/* && mapa.get(y).get(x-1) !=3*/) res = "moveW";
-					  							else if (scanner.get(10) <= scanner.get(2) && radar.get(11) !=1/* && mapa.get(y).get(x-1) !=3*/) res = "moveW";
-												else if (radar.get(7) != 1/* && mapa.get(y-1).get(x) !=3*/) res = "moveN";
-												else if (radar.get(8) !=1/* && mapa.get(y-1).get(x+1) !=3*/) res = "moveNE";
-												else if (radar.get(13) !=1/* && mapa.get(y).get(x+1) !=3*/) res = "moveE";
+					  							else if (scanner.get(11) <= scanner.get(7) && radar.get(11) !=1) res = "moveW";
+					  							//else if (scanner.get(10) <= scanner.get(2) && radar.get(11) !=1) res = "moveW";
+												else if (scanner.get(7) <= scanner.get(8) && radar.get(7) != 1) res = "moveN";
+												else if (scanner.get(8) <= scanner.get(16) && radar.get(8) !=1) res = "moveNE";
+												else if (scanner.get(16) <= scanner.get(13) && radar.get(16) !=1) res = "moveSW";
+												else if (scanner.get(13) <= scanner.get(17) && radar.get(13) !=1) res = "moveE";
+												else if (scanner.get(17) <= scanner.get(18) && radar.get(17) !=1) res = "moveS";
+												else if (radar.get(18) !=1) res = "moveSE";
+												else if (scanner.get(11) <= scanner.get(7) && radar.get(11) !=1) res = "moveW";
+												else if (radar.get(7) !=1) res = "moveN";
 					  				}
 					  				break;
 					case "moveNE":  if (radar.get(8) !=1) {
 					  				
 									} else {
 										if (radar.get(7) == 1 && radar.get(13) == 1) {
-											if (scanner.get(6) <= scanner.get(17) && radar.get(6) !=1 && mapa.get(y-1).get(x-1) !=3) {
+											if (scanner.get(6) <= scanner.get(17) && radar.get(6) !=1) {
 					  							res = "moveNW";
 											}
-											else if (scanner.get(18) <= scanner.get(17) && radar.get(18) !=1 && mapa.get(y+1).get(x+1) !=3) {
+											else if (scanner.get(18) <= scanner.get(17) && radar.get(18) !=1) {
 												res = "moveSE";
 											}
-					  						else if (scanner.get(5) <= scanner.get(17) && radar.get(5) !=1 && mapa.get(y).get(x-1) !=3) {
+					  						else if (scanner.get(5) <= scanner.get(17) && radar.get(11) !=1) {
 					  							res = "moveW";
-					  						} else if(scanner.get(11) <= scanner.get(17) && radar.get(11) !=1 && mapa.get(y).get(x-1) !=3) {
+					  						} else if ((scanner.get(1)) <= scanner.get(17) && radar.get(11) !=1) {
+					  							res = "moveW";
+					  						} else if(scanner.get(11) <= scanner.get(17) && radar.get(11) !=1) {
 					  							res = "moveW";
 					  						} else {
-					  							wantedAction = res;
+					  							wantedAction = "moveE";
 					  							res = "moveS";
+					  							wallDirection = "south";
 					  							followWall = true;
 					  						}
-										} else if (scanner.get(13) <= scanner.get(7) && radar.get(13) !=1 && mapa.get(y).get(x+1) !=3) res = "moveE";
-										else if (scanner.get(14) <= scanner.get(2) && radar.get(13) !=1 && mapa.get(y).get(x+1) !=3) res = "moveE";
-												else if (radar.get(7) != 1 && mapa.get(y-1).get(x) !=3) res = "moveN";
-												else if (radar.get(6) !=1 && mapa.get(y-1).get(x-1) !=3) res = "moveNW";
-												else if (radar.get(11) !=1 && mapa.get(y).get(x-1) !=3) res = "moveW";
+										} else if (scanner.get(13) <= scanner.get(7) && radar.get(13) !=1) res = "moveE";
+										//else if (scanner.get(14) <= scanner.get(2) && radar.get(13) !=1) res = "moveE";
+										else if (scanner.get(7) <= scanner.get(6) && radar.get(7) != 1) res = "moveN";
+										else if (scanner.get(6) <= scanner.get(7) && radar.get(6) !=1) res = "moveNW";
+										else if (scanner.get(18) <= scanner.get(6) && radar.get(18) !=1) res = "moveSE";
+										else if (scanner.get(11) <= scanner.get(18) && radar.get(11) !=1) res = "moveW";
+										else if (scanner.get(17) <= scanner.get(11) && radar.get(17) !=1) res = "moveS";
+										else if (radar.get(16) !=1) res = "moveSW";
+										else if (scanner.get(13) <= scanner.get(7) && radar.get(13) !=1) res = "moveE";
+										else if (radar.get(7) !=1) res = "moveN";
 					  				}
 					  				break;
 					case "moveS": 	if (radar.get(17) !=1) {
 				
 									} else {
 										if (radar.get(16) == 1 && radar.get(18) == 1) {
-											wantedAction = res;
-											res = lastAction;
-											followWall = true;
-										} else if (scanner.get(16) <= scanner.get(18) && radar.get(16) !=1 && mapa.get(y+1).get(x-1) !=3) res = "moveSW";
-										else if (scanner.get(18) <= scanner.get(16) && radar.get(18) !=1 && mapa.get(y+1).get(x+1) !=3) res = "moveSE";
-										else if (scanner.get(11) <= scanner.get(13) && radar.get(11) !=1 && mapa.get(y).get(x+1) !=3) res = "moveE";
-										else if (radar.get(11) !=1 && mapa.get(y).get(x-1) !=3) res = "moveW";
+											if (scanner.get(10) <= scanner.get(14) && radar.get(11) !=1) {
+												wantedAction = res;
+												res = "moveW";
+												wallDirection = "west";
+												followWall = true;
+											} else if (radar.get(13) !=1) {
+												wantedAction = res;
+												res = "moveE";
+												wallDirection = "east";
+												followWall = true;
+											} else if (radar.get(6) !=1) res = "moveNW";
+											else if (radar.get(7) !=1) res = "moveN";
+										} else if (scanner.get(16) <= scanner.get(18) && radar.get(16) !=1) res = "moveSW";
+										else if (scanner.get(18) <= scanner.get(16) && radar.get(18) !=1) res = "moveSE";
+										else if (scanner.get(11) <= scanner.get(13) && radar.get(11) !=1) res = "moveW";
+										else if (scanner.get(13) <= scanner.get(11) && radar.get(13) !=1) res = "moveE";
+										else if (scanner.get(6) <= scanner.get(8) && radar.get(6) !=1) res = "moveNW";
+										else if (scanner.get(8) <= scanner.get(6) && radar.get(8) !=1) res = "moveNE";
+										else if (radar.get(7) !=1) res = "moveN";
+										else if (radar.get(16) !=1) res = "moveSW";
+										else if (radar.get(18) !=1) res = "moveSE";
 									}
 					  				break;
 					case "moveSW":  if (radar.get(16) !=1) {
 					  					
 									} else {
 										if (radar.get(11) == 1 && radar.get(17) == 1) {
-											if (scanner.get(18) <= scanner.get(7) && radar.get(18) !=1 && mapa.get(y+1).get(x+1) !=3) {
+											if (scanner.get(18) <= scanner.get(7) && radar.get(18) !=1) {
 					  							res = "moveSE";
 											}
-											else if (scanner.get(6) <= scanner.get(6) && radar.get(6) !=1 && mapa.get(y-1).get(x-1) !=3) {
+											else if (scanner.get(6) <= scanner.get(6) && radar.get(6) !=1) {
 												res = "moveNW";
 											}
-					  						else if (scanner.get(15) <= scanner.get(7) && radar.get(15) !=1 && mapa.get(y).get(x+1) !=3) {
+					  						else if (scanner.get(19) <= scanner.get(7) && radar.get(13) !=1) {
 					  							res = "moveE";
-					  						} else if(scanner.get(13) <= scanner.get(7) && radar.get(13) !=1 && mapa.get(y).get(x+1) !=3) {
+					  						} else if (scanner.get(23) <= scanner.get(7) && radar.get(13) !=1) {
+					  							res = "moveE";
+					  						} else if(scanner.get(13) <= scanner.get(7) && radar.get(13) !=1) {
 					  							res = "moveE";
 					  						} else {
-					  							wantedAction = res;
-					  							res = "moveS";
+					  							wantedAction = "moveW";
+					  							res = "moveN";
+					  							wallDirection = "north";
 					  							followWall = true;
 					  						}
-										} else if (scanner.get(11) <= scanner.get(17) && radar.get(11) !=1 && mapa.get(y).get(x-1) !=3) res = "moveW";
-										else if (scanner.get(10) <= scanner.get(22) && radar.get(11) !=1 && mapa.get(y).get(x-1) !=3) res = "moveW";
-												else if (radar.get(17) != 1 && mapa.get(y+1).get(x) !=3) res = "moveS";
-												else if (radar.get(16) !=1 && mapa.get(y+1).get(x+1) !=3) res = "moveSE";
-												else if (radar.get(13) !=1 && mapa.get(y).get(x+1) !=3) res = "moveE";
+										} else if (scanner.get(11) <= scanner.get(17) && radar.get(11) !=1) res = "moveW";
+										//else if (scanner.get(10) <= scanner.get(22) && radar.get(11) !=1) res = "moveW";
+										else if (scanner.get(17) <= scanner.get(18) && radar.get(17) != 1) res = "moveS";
+										else if (scanner.get(18) <= scanner.get(13) && radar.get(18) !=1) res = "moveSE";
+										else if (scanner.get(6) <= scanner.get(13) && radar.get(6) !=1) res = "moveNW";
+										else if (scanner.get(13) <= scanner.get(7) && radar.get(13) !=1) res = "moveE";
+										else if (scanner.get(7) <= scanner.get(8) && radar.get(7) !=1) res = "moveN";
+										else if (radar.get(8) !=1) res = "moveNE";
+										else if (scanner.get(11) <= scanner.get(17) && radar.get(11) !=1) res = "moveW";
+										else if (radar.get(17) !=1) res = "moveS";
 					  				}
 					  				break;
 					case "moveSE": 	if (radar.get(18) !=1) {
 									} else {
 										if (radar.get(13) == 1 && radar.get(17) == 1) {
-											if (scanner.get(16) <= scanner.get(7) && radar.get(16) !=1 && mapa.get(y+1).get(x-1) !=3) {
+											if (scanner.get(16) <= scanner.get(7) && radar.get(16) !=1) {
 					  							res = "moveSW";
 											}
-											else if (scanner.get(8) <= scanner.get(7) && radar.get(8) !=1 && mapa.get(y-1).get(x+1) !=3) {
+											else if (scanner.get(8) <= scanner.get(7) && radar.get(8) !=1) {
 												res = "moveNE";
 											}
-					  						else if (scanner.get(15) <= scanner.get(7) && radar.get(15) !=1 && mapa.get(y).get(x-1) !=3) {
+											else if (scanner.get(16) <= scanner.get(11) && radar.get(16) !=1) {
+												res = "moveSW";
+											}
+					  						else if (scanner.get(15) <= scanner.get(7) && radar.get(11) !=1) {
 					  							res = "moveW";
-					  						} else if(scanner.get(11) <= scanner.get(7) && radar.get(11) !=1 && mapa.get(y).get(x-1) !=3) {
+					  						} else if ((scanner.get(21)) <= scanner.get(17) && radar.get(11) !=1) {
 					  							res = "moveW";
-					  						} else {
-					  							wantedAction = res;
-					  							res = "moveS";
+					  						}else if(scanner.get(11) <= scanner.get(7) && radar.get(11) !=1) {
+					  							res = "moveW";
+					  							
+					  						} else if (radar.get(16) !=1) res = "moveSW";
+					  						else {
+					  							wantedAction = "moveE";
+					  							res = "moveN";
+					  							wallDirection = "north";
 					  							followWall = true;
 					  						}
-										} else if (scanner.get(13) <= scanner.get(17) && radar.get(13) !=1 && mapa.get(y).get(x+1) !=3) res = "moveE";
-										else if (scanner.get(14) <= scanner.get(22) && radar.get(13) !=1 && mapa.get(y).get(x+1) !=3) res = "moveE";
-												else if (radar.get(17) != 1 && mapa.get(y+1).get(x) !=3) res = "moveS";
-												else if (radar.get(16) !=1 && mapa.get(y+1).get(x-1) !=3) res = "moveSW";
-												else if (radar.get(11) !=1 && mapa.get(y).get(x-1) !=3) res = "moveW";
+										} else if (scanner.get(13) <= scanner.get(17) && radar.get(13) !=1) res = "moveE";
+										//else if (scanner.get(14) <= scanner.get(22) && radar.get(13) !=1) res = "moveE";
+										else if (scanner.get(8) <= scanner.get(11) && radar.get(8) !=1) res = "moveNE";
+										else if (scanner.get(17) <= scanner.get(16) && radar.get(17) != 1) res = "moveS";
+										else if (scanner.get(16) <= scanner.get(8) && radar.get(16) !=1) res = "moveSW";
+										else if (scanner.get(11) <= scanner.get(7) && radar.get(11) !=1) res = "moveW";
+										else if (scanner.get(7) <= scanner.get(6) && radar.get(7) !=1) res = "moveN";
+										else if (radar.get(6) !=1) res = "moveNW";
+										else if (scanner.get(13) <= scanner.get(17) && radar.get(13) !=1) res = "moveE";
+										else if (radar.get(17) !=1) res = "moveS";
 					  				}
 					  				break;
 					case "moveW": 	if (radar.get(11) !=1) {
 									
 									} else {
 										if (radar.get(6) == 1 && radar.get(16) == 1) {
-											wantedAction = res;
-											res = lastAction;
-											followWall = true;
-										} else if (scanner.get(16) <= scanner.get(6) && radar.get(16) !=1 && mapa.get(y+1).get(x-1) !=3) res = "moveSW";
-										else if (scanner.get(6) <= scanner.get(16) && radar.get(6) !=1 && mapa.get(y-1).get(x-1) !=3) res = "moveNW";
-										else if (scanner.get(17) <= scanner.get(7) && radar.get(17) !=1 && mapa.get(y+1).get(x) !=3) res = "moveS";
-										else if (radar.get(7) !=1 && mapa.get(y-1).get(x) !=3) res = "moveN";
+											if (scanner.get(2) <= scanner.get(22) && radar.get(7) !=1) {
+												wantedAction = res;
+												res = "moveN";
+												wallDirection = "north";
+												followWall = true;
+											} else if (radar.get(17) !=1){
+												wantedAction = res;
+												res = "moveS";
+												wallDirection = "south";
+												followWall = true;
+											} else if (radar.get(18) !=1) res = "moveSE";
+											else if (radar.get(13) !=1) res = "moveE";
+										} else if (scanner.get(16) <= scanner.get(6) && radar.get(16) !=1) res = "moveSW";
+										else if (scanner.get(6) <= scanner.get(16) && radar.get(6) !=1) res = "moveNW";
+										else if (scanner.get(17) <= scanner.get(7) && radar.get(17) !=1) res = "moveS";
+										else if (radar.get(7) !=1) res = "moveN";
+										else if (scanner.get(8) <= scanner.get(18) && radar.get(8) !=1) res = "moveNE";
+										else if (scanner.get(18) <= scanner.get(13) && radar.get(18) !=1) res = "moveSE";
+										else if (radar.get(13) !=1 && mapa[x+1][y] != 3) res = "moveE";
+										else if (radar.get(6) !=1) res = "moveNW";
+										else if (radar.get(16) !=1) res = "moveSW";
 									}
 									break;
 					case "moveE": 	if (radar.get(13) !=1) {
 									
 									} else {
 										if (radar.get(8) == 1 && radar.get(18) == 1) {
-											wantedAction = res;
-											res = lastAction;
-											followWall = true;
-										} else if (scanner.get(18) <= scanner.get(8) && radar.get(18) !=1 && mapa.get(y+1).get(x+1) !=3) res = "moveSE";
-										else if (scanner.get(8) <= scanner.get(18) && radar.get(8) !=1 && mapa.get(y-1).get(x+1) !=3) res = "moveNE";
-										else if (scanner.get(17) <= scanner.get(7) && radar.get(17) !=1 && mapa.get(y+1).get(x) !=3) res = "moveS";
-										else if (radar.get(7) !=1 && mapa.get(y-1).get(x) !=3) res = "moveN";
-										else if (radar.get(17) !=1 && mapa.get(y+1).get(x) !=3) res = "moveS";
+											if (scanner.get(2) <= scanner.get(22) && radar.get(7) !=1) {
+												wantedAction = res;
+												res = "moveN";
+												wallDirection = "north";
+												followWall = true;
+											} else if (radar.get(17) !=1) {
+												wantedAction = res;
+												res = "moveS";
+												wallDirection = "south";
+												followWall = true;
+											} else if (radar.get(16) !=1) res = "moveSW";
+											else if (radar.get(11) !=1) res = "moveW";
+										} else if (scanner.get(18) <= scanner.get(8) && radar.get(18) !=1) res = "moveSE";
+										else if (scanner.get(8) <= scanner.get(18) && radar.get(8) !=1) res = "moveNE";
+										else if (scanner.get(17) <= scanner.get(7) && radar.get(17) !=1) res = "moveS";
+										else if (scanner.get(7) <= scanner.get(6) && radar.get(7) !=1) res = "moveN";
+										else if (scanner.get(6) <= scanner.get(7) && radar.get(6) !=1) res = "moveNW";
+										else if (scanner.get(16) <= scanner.get(6) && radar.get(16) !=1) res = "moveSW";
+										else if (radar.get(11) !=1 && mapa[x-1][y] != 3) res = "moveW";
+										else if (radar.get(8) !=1) res = "moveNE";
+										else if (radar.get(18) !=1) res = "moveSE";
 									}
 									break;
 				}
@@ -535,7 +761,7 @@ public class BotZ extends SingleAgent {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		lastAction="refuel";
+		//lastAction="refuel";
 		return result;
 	}
 	
@@ -553,17 +779,39 @@ public class BotZ extends SingleAgent {
 				requestRadar();
 				updateAll();
 				//System.out.println(bateria);
-				System.out.println("Scanner:");
-				for (int i=0;i<5;i++) {
-					System.out.println(scanner.get((i*5)+0)+" "+scanner.get((i*5)+1)+" "+scanner.get((i*5)+2)+" "+scanner.get((i*5)+3)+" "+scanner.get((i*5)+4));
-				}
+				
 				
 				System.out.println("\nRadar:");
 				for (int i=0;i<5;i++) {
 					System.out.println(radar.get((i*5)+0)+" "+radar.get((i*5)+1)+" "+radar.get((i*5)+2)+" "+radar.get((i*5)+3)+" "+radar.get((i*5)+4));
 				}
 				
-				System.out.println("Estamos en: "+x+","+y+" mapa: "+mapa.get(y).get(x));
+				System.out.println("Mapa");
+				for (int i=0;i<25;i++) {
+						int xaux = (i%5)-2;
+						int yaux = (i/5)-2;
+						int actualx = x+xaux;
+						int actualy = y+yaux;
+						if (actualx >=0 && actualy >=0 && actualx<=499 && actualy<=499) {
+							if (i%5==0 && i!=0) {
+								if (mapa[actualx][actualy] == 3) {
+									//System.out.print("Actual: " +actualx+" "+actualy+" ");
+									System.out.print("\n"+mapa[actualx][actualy]+" ");
+								} else {
+									System.out.print("\n"+mapa[actualx][actualy]+" ");
+								}
+							} else {
+								if (mapa[actualx][actualy] == 3) {
+									//System.out.print("Actual: " +actualx+" "+actualy+" ");
+									System.out.print(mapa[actualx][actualy]+" ");
+								} else {
+								System.out.print(+mapa[actualx][actualy]+" ");
+								}
+							}
+						}
+				}
+				
+				System.out.println("Estamos en: "+x+","+y+" mapa: "+mapa[x][y]);
 				if(radar.get(12)==2) {
 					System.out.println("Encontrado en el punto:("+x+","+y+")");
 					moverse = false;
