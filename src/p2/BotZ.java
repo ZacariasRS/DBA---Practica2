@@ -46,7 +46,12 @@ public class BotZ extends SingleAgent {
 		followWall = false;
 	}
 	
-	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función para conectar con el servidor.
+	 */
 	public void login() {
 		JSONObject json = new JSONObject();
 		
@@ -87,6 +92,13 @@ public class BotZ extends SingleAgent {
 		}
 	}
 	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función para desconectar correctamente del servidor.
+	 */
+	
 	public void logout() {
 		
 		try {
@@ -103,7 +115,13 @@ public class BotZ extends SingleAgent {
 		this.send(logout);
 		
 	}
-	
+
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función que actualiza batería.
+	 */
 	public void requestBattery () throws InterruptedException, JSONException {
 		ACLMessage inbox, outbox;
 		boolean received = false;
@@ -123,6 +141,12 @@ public class BotZ extends SingleAgent {
 		}
 	}
 	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función que actualiza GPS.
+	 */
 	public void requestGPS () throws InterruptedException, JSONException {
 		ACLMessage inbox, outbox;
 		boolean received = false;
@@ -145,6 +169,12 @@ public class BotZ extends SingleAgent {
 		}
 	}
 	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función que actualiza Scanner.
+	 */
 	public void requestScanner() throws InterruptedException, JSONException {
 		ArrayList<Integer> res = new ArrayList<Integer>(25);
 		ACLMessage inbox, outbox;
@@ -169,6 +199,12 @@ public class BotZ extends SingleAgent {
 		}
 	}
 	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función que actualiza radar.
+	 */
 	public void requestRadar() throws InterruptedException, JSONException {
 		ArrayList<Integer> res = new ArrayList<Integer>(25);
 		ACLMessage inbox, outbox;
@@ -192,6 +228,14 @@ public class BotZ extends SingleAgent {
 			}
 		}
 	}
+	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función que actualiza nuestra posicion y la marca en nuestro mapa en memoria,
+	 *  y tambien pinta el mapa gráfico
+	 */
 	
 	public void updateAll() {
 		System.out.println("Actualizo:"+x+" "+y);
@@ -220,6 +264,12 @@ public class BotZ extends SingleAgent {
 	}
 	
 	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función que devuelve un entero, el cual es la celda del array scanner con el menor valor.
+	 */
 	public int posicionMenor() {
 		int pos = 0;
 		int menor = 90000000;
@@ -247,6 +297,12 @@ public class BotZ extends SingleAgent {
 		return pos;
 	}
 	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función núcleo del agente. Esta función obtiene el movimiento mas favorable para el agente.
+	 */
 	public String think() {
 		String res = null;
 		
@@ -718,6 +774,12 @@ public class BotZ extends SingleAgent {
 		return res;
 	}
 	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función que manda la accion de moverse.
+	 */
 	public String move(String movimiento) throws InterruptedException {
 		String result = null;
 		try {
@@ -742,6 +804,12 @@ public class BotZ extends SingleAgent {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @author Zacarías Romero Sellamitou
+	 * 
+	 * Función que manda la acción de repostar.
+	 */
 	public String refuel() throws InterruptedException {
 		String result = null;
 		try {
