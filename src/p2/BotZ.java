@@ -57,7 +57,7 @@ public class BotZ extends SingleAgent {
 		
 		try {
 			json.put("command", "login");
-			json.put("world", "map8");
+			json.put("world", "map2");
 			json.put("radar", RescueBots.nRadar);
 			json.put("scanner", RescueBots.nScanner);
 			json.put("gps", RescueBots.nGPS);
@@ -301,7 +301,7 @@ public class BotZ extends SingleAgent {
 	 * 
 	 * @author Zacarías Romero Sellamitou
 	 * 
-	 * Función núcleo del agente. Esta función obtiene el movimiento mas favorable para el agente.
+	 * Función núcleo del agente. Esta función obtiene el movimiento más favorable para el agente.
 	 */
 	public String think() {
 		String res = null;

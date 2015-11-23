@@ -7,11 +7,11 @@ import es.upv.dsic.gti_ia.core.AgentsConnection;
 public class RescueBots {
 
 	static final String nServer = "Izar";
-	static final String nBot = "botZ";
-	static final String nBattery = "bateryZ";
-	static final String nGPS = "gpsZ";
-	static final String nScanner = "scannerZ";
-	static final String nRadar = "radarZ";
+	static final String nBot = "botZZ";
+	static final String nBattery = "bateryZZ";
+	static final String nGPS = "gpsZZ";
+	static final String nScanner = "scannerZZ";
+	static final String nRadar = "radarZZ";
 	
 	public static void main(String[] args) throws Exception {
 		
