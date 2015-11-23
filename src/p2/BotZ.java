@@ -57,7 +57,7 @@ public class BotZ extends SingleAgent {
 		
 		try {
 			json.put("command", "login");
-			json.put("world", "map2");
+			json.put("world", "map13");
 			json.put("radar", RescueBots.nRadar);
 			json.put("scanner", RescueBots.nScanner);
 			json.put("gps", RescueBots.nGPS);
@@ -306,7 +306,6 @@ public class BotZ extends SingleAgent {
 	public String think() {
 		String res = null;
 		
-		int mejor = posicionMenor();
 		for (int i=0;i<25;i++) {
 			int xaux = (i%5)-2;
 			int yaux = (i/5)-2;
@@ -364,6 +363,8 @@ public class BotZ extends SingleAgent {
 		for (int i=0;i<5;i++) {
 			System.out.println(scanner.get((i*5)+0)+" "+scanner.get((i*5)+1)+" "+scanner.get((i*5)+2)+" "+scanner.get((i*5)+3)+" "+scanner.get((i*5)+4));
 		}
+
+		int mejor = posicionMenor();
 		if (followWall) {
 			switch (wallDirection) {
 			case "north" :
